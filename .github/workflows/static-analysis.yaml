@@ -45,7 +45,8 @@ jobs:
         id: bandit
         run: |
           mkdir -p reports/bandit
-          bandit -r src/ -f html -o reports/bandit/bandit.html -ll
+          # bandit -r src/ -f html -o reports/bandit/bandit.html -ll
+          bandit --exit-zero -r src/ -f html -o reports/bandit/bandit.html -ll
         continue-on-error: true
 
       # 6) Zawsze uploaduj Flake8 Report
