@@ -48,7 +48,7 @@ jobs:
       # 6) Pull OWASP ZAP Docker Image
       - name: Pull OWASP ZAP Image
         run: |
-          docker pull owasp/zap2docker
+          docker pull zaproxy/zap-stable
 
       # 7) Start OWASP ZAP in Docker
       - name: Start OWASP ZAP
