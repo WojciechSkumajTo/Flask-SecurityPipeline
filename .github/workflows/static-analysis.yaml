@@ -27,7 +27,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements/*.txt
 
-      # 3) Install dependencies (w tym flake8-html, jeśli nie jest w dev.txt)
+      # 3) Install dependencies
       - name: Install Dependencies
         run: |
           pip install -r requirements/dev.txt

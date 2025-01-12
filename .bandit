@@ -1,0 +1,13 @@
+[bandit]
+# Pliki i foldery do skanowania
+targets: .
+
+# Wykluczenie niektórych błędów/ostrzeżeń
+skips: B101,B102  # Wykluczenie specyficznych reguł Bandit (np. assert statements)
+
+# Maksymalny poziom błędu, który zostanie zignorowany (1: Low, 2: Medium, 3: High)
+severity: Low
+
+# Dodatkowe wykluczenia folderów
+exclude: tests,__pycache__
+

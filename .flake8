@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 120  # Dopuszczalna długość linii kodu
+exclude = .git,__pycache__,build,dist  # Wykluczone foldery
+ignore =
+    E203,  # Spacje wokół operatorów (np. indeksowania)
+    E501,  # Długość linii przekraczająca limit (już obsługiwane przez max-line-length)
+    W503   # Łamanie linii przed operatorem binarnym
+
