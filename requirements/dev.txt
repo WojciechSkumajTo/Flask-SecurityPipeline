@@ -196,3 +196,12 @@ virtualenv==20.27.1
     # via
     #   pre-commit
     #   tox
+
+
+# Moje zmiany
+
+flake8==7.1.1
+
+flake8-html==0.4.3
+
+bandit==1.8.0
