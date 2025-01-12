@@ -4,8 +4,8 @@ exclude =
     .git,
     __pycache__,
     build,
-    dist  # Foldery wykluczone z analizy
+    dist
 ignore =
-    E203,  # Spacje wokół operatorów (zgodne z Black)
-    E501,  # Długość linii przekraczająca limit (używane max-line-length)
-    W503   # Łamanie linii przed operatorem binarnym
+    E203,
+    E501,
+    W503
