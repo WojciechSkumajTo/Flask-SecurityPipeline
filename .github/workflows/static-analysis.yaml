@@ -32,7 +32,13 @@ jobs:
         run: |
           pip install -r requirements/dev.txt
 
-      # 4) Start Flask Application
+      # 4) Prepare Report Directories
+      - name: Prepare Report Directories
+        run: |
+          mkdir -p reports/zap reports/flake8 reports/bandit
+          chmod -R 755 reports
+
+      # 5) Start Flask Application
       - name: Start Flask App
         run: |
           nohup python app.py &
@@ -41,33 +47,34 @@ jobs:
           FLASK_APP: app.py
           FLASK_ENV: development
 
-      # 5) Wait for Flask to Start
+      # 6) Wait for Flask to Start
       - name: Wait for Flask to Start
-        run: sleep 10
+        run: |
+          timeout 30 bash -c 'until echo > /dev/tcp/localhost/5000; do sleep 1; done'
 
-      # 6) Pull OWASP ZAP Docker Image
+      # 7) Pull OWASP ZAP Docker Image
       - name: Pull OWASP ZAP Image
         run: |
           docker pull zaproxy/zap-stable
 
-      # 7) Start OWASP ZAP in Docker
+      # 8) Start OWASP ZAP in Docker
       - name: Start OWASP ZAP
         run: |
-          docker run -d --name zap -u zap -p 8080:8080 -v $PWD/reports:/zap/reports zaproxy/zap-stable zap.sh -daemon -port 8080 -host 0.0.0.0
+          docker run -d --name zap -p 8080:8080 -v $PWD/reports:/zap/reports zaproxy/zap-stable zap.sh -daemon -port 8080 -host 0.0.0.0
 
-      # 8) Wait for OWASP ZAP to Start
+      # 9) Wait for OWASP ZAP to Start
       - name: Wait for OWASP ZAP to Start
-        run: sleep 10
+        run: |
+          timeout 30 bash -c 'until echo > /dev/tcp/localhost/8080; do sleep 1; done'
 
-      # 9) Run OWASP ZAP Security Scan
+      # 10) Run OWASP ZAP Security Scan
       - name: Run OWASP ZAP Scan
         id: owasp-zap-scan
         run: |
-          mkdir -p reports/zap
           docker exec zap zap-cli -p 8080 quick-scan --self-contained --spider -r http://localhost:5000
           docker exec zap zap-cli -p 8080 report -o /zap/reports/zap_report.html -f html
 
-      # 10) Upload OWASP ZAP Report
+      # 11) Upload OWASP ZAP Report
       - name: Upload ZAP Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -75,23 +82,21 @@ jobs:
           name: zap-report
           path: reports/zap/zap_report.html
 
-      # 11) Run Flake8
+      # 12) Run Flake8
       - name: Run Flake8
         id: flake8
         run: |
-          mkdir -p reports/flake8
           flake8 src/ --format=html --htmldir=reports/flake8
         continue-on-error: true
 
-      # 12) Run Bandit
+      # 13) Run Bandit
       - name: Run Bandit
         id: bandit
         run: |
-          mkdir -p reports/bandit
           bandit --exit-zero -r src/ -f html -o reports/bandit/bandit.html -ll
         continue-on-error: true
 
-      # 13) Upload Flake8 Report
+      # 14) Upload Flake8 Report
       - name: Upload Flake8 Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -99,7 +104,7 @@ jobs:
           name: flake8-report
           path: reports/flake8
 
-      # 14) Upload Bandit Report
+      # 15) Upload Bandit Report
       - name: Upload Bandit Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -107,7 +112,7 @@ jobs:
           name: bandit-report
           path: reports/bandit/bandit.html
 
-      # 15) Analysis Summary
+      # 16) Analysis Summary
       - name: Analysis Summary
         if: always()
         run: |
@@ -127,7 +132,7 @@ jobs:
             echo "OWASP ZAP Security Scan failed or no report generated."
           fi
 
-      # 16) Fail if analysis has errors
+      # 17) Fail if analysis has errors
       - name: Fail if analysis has errors
         if: always()
         run: |
