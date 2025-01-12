@@ -45,11 +45,19 @@ jobs:
         id: bandit
         run: |
           mkdir -p reports/bandit
-          # bandit -r src/ -f html -o reports/bandit/bandit.html -ll
           bandit --exit-zero -r src/ -f html -o reports/bandit/bandit.html -ll
         continue-on-error: true
 
-      # 6) Zawsze uploaduj Flake8 Report
+      # 6) Run Safety (Dependency Vulnerability Scanning)
+      - name: Run Safety
+        id: safety
+        run: |
+          mkdir -p reports/safety
+          pip install safety
+          safety check --full-report > reports/safety/safety_report.txt
+        continue-on-error: true
+
+      # 7) Zawsze uploaduj Flake8 Report
       - name: Upload Flake8 Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,7 +65,7 @@ jobs:
           name: flake8-report
           path: reports/flake8
 
-      # 7) Zawsze uploaduj Bandit Report
+      # 8) Zawsze uploaduj Bandit Report
       - name: Upload Bandit Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -65,7 +73,15 @@ jobs:
           name: bandit-report
           path: reports/bandit/bandit.html
 
-      # 8) Podsumowanie w logu
+      # 9) Zawsze uploaduj Safety Report
+      - name: Upload Safety Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safety-report
+          path: reports/safety/safety_report.txt
+
+      # 10) Podsumowanie w logu
       - name: Analysis Summary
         if: always()
         run: |
@@ -79,10 +95,14 @@ jobs:
           else
             echo "Bandit Analysis failed or no report generated."
           fi
+          if [ -f "reports/safety/safety_report.txt" ]; then
+            echo "Safety Analysis completed. Report uploaded."
+          else
+            echo "Safety Analysis failed or no report generated."
+          fi
 
-      # 9) Ostateczny krok decydujący o failu joba, jeśli Flake8/Bandit wykazały błędy
+      # 11) Ostateczny krok decydujący o failu joba, jeśli Flake8/Bandit/Safety wykazały błędy
       - name: Fail if analysis has errors
-        # "if: always()" – uruchomi się nawet, gdy poprzednie kroki są w statusie failure
         if: always()
         run: |
           if [ "${{ steps.flake8.outcome }}" == "failure" ]; then
@@ -95,4 +115,9 @@ jobs:
             exit 1
           fi
 
-          echo "Both Flake8 and Bandit passed without critical errors."
+          if grep -q "Vulnerable" reports/safety/safety_report.txt; then
+            echo "Safety found vulnerable dependencies. Marking job as failed."
+            exit 1
+          fi
+
+          echo "All tools passed without critical errors."
