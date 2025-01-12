@@ -3,8 +3,12 @@ max-line-length = 120
 exclude =
     .git,
     __pycache__,
-    build,
-    dist
+    docs,
+    src/flask/__init__.py,
+    src/flask/app.py,
+    src/flask/cli.py,
+    src/flask/config.py,
+    src/flask/helpers.py
 ignore =
     E203,
     E501,
