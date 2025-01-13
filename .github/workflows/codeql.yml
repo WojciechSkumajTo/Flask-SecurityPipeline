@@ -11,7 +11,7 @@ on:
      - main
      - stable
  schedule:
-   - cron: "0 3 * * 1" # Cotygodniowe uruchomienie w poniedziałki o 3:00 UTC
+   - cron: "0 3 * * 1"
 
 
 jobs:
