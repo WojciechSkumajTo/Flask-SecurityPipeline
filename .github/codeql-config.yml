@@ -1,0 +1,11 @@
+name: "Custom CodeQL Config"
+queries:
+  - security-and-quality
+  - performance
+  - maintainability
+paths:
+  include:
+    - "src/"
+  exclude:
+    - "tests/"
+    - "docs/"
