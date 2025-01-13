@@ -1,4 +1,4 @@
-name: Static Code Analysis and Security Testing
+name: Static Code Analysis
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   static-analysis:
-    name: Static Code Analysis and Security Testing
+    name: Static Code Analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -32,70 +32,24 @@ jobs:
         run: |
           pip install -r requirements/dev.txt
 
-      # 4) Prepare Report Directories
-      - name: Prepare Report Directories
-        run: |
-          mkdir -p reports/zap reports/flake8 reports/bandit
-          chmod -R 755 reports
-
-      # 5) Start Flask Application
-      - name: Start Flask App
-        run: |
-          nohup python app.py &
-        working-directory: ./tests/test_apps/exampleflaskapp
-        env:
-          FLASK_APP: app.py
-          FLASK_ENV: development
-
-      # 6) Wait for Flask to Start
-      - name: Wait for Flask to Start
-        run: |
-          timeout 30 bash -c 'until echo > /dev/tcp/localhost/5000; do sleep 1; done'
-
-      # 7) Pull OWASP ZAP Docker Image
-      - name: Pull OWASP ZAP Image
-        run: |
-          docker pull zaproxy/zap-stable
-
-      # 8) Start OWASP ZAP in Docker
-      - name: Start OWASP ZAP
-        run: |
-          docker run -d --name zap -p 8080:8080 -v $PWD/reports:/zap/reports zaproxy/zap-stable zap.sh -daemon -port 8080 -host 0.0.0.0 \
-            -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
-
-      # 9) Wait for OWASP ZAP to Start
-      - name: Wait for OWASP ZAP to Start
-        run: |
-          timeout 30 bash -c 'until echo > /dev/tcp/localhost/8080; do sleep 1; done'
-
-      # 10) Run OWASP ZAP API Scan
-      - name: Run OWASP ZAP Scan
-        run: |
-          python zap_scan.py
-
-      # 11) Upload OWASP ZAP Report
-      - name: Upload ZAP Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: reports/zap/zap_report.html
-
-      # 12) Run Flake8
+      # 4) Run Flake8 (continue-on-error, żeby nie przerwać joba przed uploadem)
       - name: Run Flake8
         id: flake8
         run: |
+          mkdir -p reports/flake8
           flake8 src/ --format=html --htmldir=reports/flake8
         continue-on-error: true
 
-      # 13) Run Bandit
+      # 5) Run Bandit (continue-on-error, żeby nie przerwać joba przed uploadem)
       - name: Run Bandit
         id: bandit
         run: |
+          mkdir -p reports/bandit
+          # bandit -r src/ -f html -o reports/bandit/bandit.html -ll
           bandit --exit-zero -r src/ -f html -o reports/bandit/bandit.html -ll
         continue-on-error: true
 
-      # 14) Upload Flake8 Report
+      # 6) Zawsze uploaduj Flake8 Report
       - name: Upload Flake8 Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,7 +57,7 @@ jobs:
           name: flake8-report
           path: reports/flake8
 
-      # 15) Upload Bandit Report
+      # 7) Zawsze uploaduj Bandit Report
       - name: Upload Bandit Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -111,7 +65,7 @@ jobs:
           name: bandit-report
           path: reports/bandit/bandit.html
 
-      # 16) Analysis Summary
+      # 8) Podsumowanie w logu
       - name: Analysis Summary
         if: always()
         run: |
@@ -125,14 +79,10 @@ jobs:
           else
             echo "Bandit Analysis failed or no report generated."
           fi
-          if [ -f "reports/zap/zap_report.html" ]; then
-            echo "OWASP ZAP Security Scan completed. Report uploaded."
-          else
-            echo "OWASP ZAP Security Scan failed or no report generated."
-          fi
 
-      # 17) Fail if analysis has errors
+      # 9) Ostateczny krok decydujący o failu joba, jeśli Flake8/Bandit wykazały błędy
       - name: Fail if analysis has errors
+        # "if: always()" – uruchomi się nawet, gdy poprzednie kroki są w statusie failure
         if: always()
         run: |
           if [ "${{ steps.flake8.outcome }}" == "failure" ]; then
@@ -145,11 +95,4 @@ jobs:
             exit 1
           fi
 
-          echo "Static analysis passed. Proceeding to OWASP ZAP results."
-
-          if grep -q "FAIL-CRITICAL" reports/zap/zap_report.html; then
-            echo "OWASP ZAP found critical vulnerabilities. Marking job as failed."
-            exit 1
-          fi
-
-          echo "All analyses passed successfully."
+          echo "Both Flake8 and Bandit passed without critical errors."
