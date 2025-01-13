@@ -12,7 +12,7 @@ cryptography==43.0.3
     # via -r typing.in
 iniconfig==2.0.0
     # via pytest
-mypy==1.13.0
+mypy==1.14.1
     # via -r typing.in
 mypy-extensions==1.0.0
     # via mypy
