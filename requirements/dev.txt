@@ -207,3 +207,6 @@ flake8-html==0.4.3
 bandit==1.8.0
 
 flask==3.1.0
+
+requests==2.32.3
+

@@ -60,19 +60,18 @@ jobs:
       # 8) Start OWASP ZAP in Docker
       - name: Start OWASP ZAP
         run: |
-          docker run -d --name zap -p 8080:8080 -v $PWD/reports:/zap/reports zaproxy/zap-stable zap.sh -daemon -port 8080 -host 0.0.0.0
+          docker run -d --name zap -p 8080:8080 -v $PWD/reports:/zap/reports zaproxy/zap-stable zap.sh -daemon -port 8080 -host 0.0.0.0 \
+            -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
 
       # 9) Wait for OWASP ZAP to Start
       - name: Wait for OWASP ZAP to Start
         run: |
           timeout 30 bash -c 'until echo > /dev/tcp/localhost/8080; do sleep 1; done'
 
-      # 10) Run OWASP ZAP Security Scan
+      # 10) Run OWASP ZAP API Scan
       - name: Run OWASP ZAP Scan
-        id: owasp-zap-scan
         run: |
-          docker exec zap zap-cli -p 8080 quick-scan --self-contained --spider -r http://localhost:5000
-          docker exec zap zap-cli -p 8080 report -o /zap/reports/zap_report.html -f html
+          python zap_scan.py
 
       # 11) Upload OWASP ZAP Report
       - name: Upload ZAP Report
