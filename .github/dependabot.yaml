@@ -1,21 +1,19 @@
 version: 2
 updates:
-  # Aktualizacja zależności na podstawie plików wejściowych (`*.in`)
+  # Aktualizacje zależności Pythonowych
   - package-ecosystem: "pip"
-    directory: "/requirements" # Ścieżka do katalogu z plikami requirements
-    schedule:
-      interval: "daily" # Codzienne sprawdzanie aktualizacji
-    open-pull-requests-limit: 10
-    # Ignorowanie specyficznych wersji lub pakietów (opcjonalne)
-    ignore:
-      - dependency-name: "flake8"
-        versions: ["<7.0.0"]
-      - dependency-name: "bandit"
-        versions: ["<1.8.0"]
-
-  # Aktualizacja GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/.github/workflows" # Dla plików workflow
+    directory: "/requirements" # Katalog z plikami requirements
     schedule:
       interval: "weekly" # Cotygodniowe sprawdzanie aktualizacji
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 1 # Ograniczenie do jednego PR
+    groups:
+      all-dependencies:
+        patterns:
+          - ".*" # Grupowanie wszystkich zależności w jedno zgłoszenie
+
+  # Aktualizacje GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/" # Dla plików workflow w katalogu .github/workflows/
+    schedule:
+      interval: "weekly" # Cotygodniowe sprawdzanie aktualizacji
+    open-pull-requests-limit: 1 # Ograniczenie do jednego PR
