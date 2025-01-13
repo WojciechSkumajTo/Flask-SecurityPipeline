@@ -9,7 +9,7 @@ updates:
     groups:
       all-dependencies:
         patterns:
-          - ".*" # Grupowanie wszystkich zależności w jedno zgłoszenie
+          - ".*" # Grupowanie wszystkich zależności w jeden PR
 
   # Aktualizacje GitHub Actions
   - package-ecosystem: "github-actions"
@@ -17,3 +17,7 @@ updates:
     schedule:
       interval: "weekly" # Cotygodniowe sprawdzanie aktualizacji
     open-pull-requests-limit: 1 # Ograniczenie do jednego PR
+    groups:
+      all-actions:
+        patterns:
+          - ".*" # Grupowanie wszystkich zależności GitHub Actions w jeden PR
