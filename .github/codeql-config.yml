@@ -1,8 +1,7 @@
 name: "Custom CodeQL Config"
 queries:
-  - security-and-quality
-  - performance
-  - maintainability
+  - uses: codeql/python-queries@latest
+  - uses: codeql/security-extended@latest
 paths:
   include:
     - "src/"
