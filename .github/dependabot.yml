@@ -2,11 +2,10 @@ version: 2
 updates:
   # Aktualizacje zależności Pythonowych
   - package-ecosystem: "pip"
-    directory: "/requirements"
+    directory: "/requirements" # Katalog z plikami requirements
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 3
-    prune-stale-branches: true
+      interval: "weekly" # Cotygodniowe sprawdzanie aktualizacji
+    open-pull-requests-limit: 3 # Maksymalnie 3 otwarte PR-y
     labels:
       - dependencies
       - python
@@ -15,16 +14,14 @@ updates:
     groups:
       all-dependencies:
         patterns:
-          - ".*"
-    security-updates: true
+          - ".*" # Grupowanie wszystkich zależności w jedno zgłoszenie
 
   # Aktualizacje GitHub Actions
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directory: "/" # Katalog z plikami GitHub Actions
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 3
-    prune-stale-branches: true
+      interval: "weekly" # Cotygodniowe sprawdzanie aktualizacji
+    open-pull-requests-limit: 3 # Maksymalnie 3 otwarte PR-y
     labels:
       - dependencies
       - github-actions
@@ -33,5 +30,4 @@ updates:
     groups:
       all-actions:
         patterns:
-          - ".*"
-    security-updates: true
+          - ".*" # Grupowanie wszystkich zależności w jedno zgłoszenie
